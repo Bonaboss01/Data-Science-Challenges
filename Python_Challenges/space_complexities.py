@@ -18,7 +18,7 @@ print(find_pair_with_difference(test_values, test_target1))
 print(find_pair_with_difference(test_values, test_target2))
 
 
-# function
+# function to count smaller values
 
 test_values = [5, 3, 7, 8, 1, 10]
 test_query_values = [7, 2, 11, 1, 10]
