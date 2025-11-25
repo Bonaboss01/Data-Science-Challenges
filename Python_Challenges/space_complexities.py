@@ -16,3 +16,22 @@ def find_pair_with_difference(values, target):
 
 print(find_pair_with_difference(test_values, test_target1))
 print(find_pair_with_difference(test_values, test_target2))
+
+
+# function
+
+test_values = [5, 3, 7, 8, 1, 10]
+test_query_values = [7, 2, 11, 1, 10]
+# Expected answer: [3, 1, 6, 0, 5]
+import bisect
+
+# O(N log(N) + Q log(N)) where N = len(values) and Q = len(query_values)
+def count_smaller(values, query_values):
+    sorted_values = sorted(values)                         # N log(N)
+    count = []                                             # 1
+    for query_value in query_values:                       # Q
+        i = bisect.bisect_left(sorted_values, query_value) # Q log(N)
+        count.append(i)                                    # 1
+    return count
+
+print(count_smaller(test_values, test_query_values))
