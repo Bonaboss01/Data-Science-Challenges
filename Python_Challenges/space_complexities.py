@@ -3,7 +3,7 @@ test_values = [5, 7, 2, 8]
 test_target1 = 3
 # Expected answer: True
 
-test_target2 = 4
+test_target2 = 4 
 # Expected answer: False
 def find_pair_with_difference(values, target):
     value_set = set(values)
