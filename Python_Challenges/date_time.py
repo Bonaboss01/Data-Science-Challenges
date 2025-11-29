@@ -14,3 +14,10 @@ import pytz
 
 my_timezone_name = 'America/New_York' 
 time_now = dt.datetime.now(pytz.timezone(my_timezone_name))
+
+time_now = dt.datetime.now()
+
+# Birthday for someone born on 19th of May
+time_birthday = dt.datetime(time_now.year, 5, 19)
+time_to_birthday = time_birthday - time_now
+print(time_to_birthday)
