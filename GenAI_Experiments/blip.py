@@ -16,7 +16,7 @@ def generate_caption(image_path):
 
 print(generate_caption("image.jpg"))
 
-
+# stromhger nersion
 from transformers import BlipProcessor, BlipForConditionalGeneration
 from PIL import Image
 import torch
