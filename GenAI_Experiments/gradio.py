@@ -1,4 +1,4 @@
-# creating Gradio Interface
+# creating Gradio Interface for image captioning
 
 import gradio as gr
 def greet(name, intensity):
