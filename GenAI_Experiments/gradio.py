@@ -13,7 +13,7 @@ demo = gr.Interface(
 demo.launch(server_name="127.0.0.1", server_port= 7860)
 
 
-
+# Gradio interface for BLIP
 processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
 model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
 def generate_caption(image):
