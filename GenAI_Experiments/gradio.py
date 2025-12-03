@@ -10,6 +10,7 @@ demo = gr.Interface(
   inputs=["text", "slider"],
   outputs=["text"],
 )
+# luanch server
 demo.launch(server_name="127.0.0.1", server_port= 7860)
 
 
