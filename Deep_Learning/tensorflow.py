@@ -1,3 +1,4 @@
+# Can be used for churn, fraud or stock prediction
 """
 binary_classification_tf.py
 
