@@ -21,3 +21,57 @@ time_now = dt.datetime.now()
 time_birthday = dt.datetime(time_now.year, 5, 19)
 time_to_birthday = time_birthday - time_now
 print(time_to_birthday)
+
+
+"""
+Reusable date and time utilities for analytics and ML pipelines.
+Designed for consistency across data ingestion, modeling, and reporting.
+"""
+
+from datetime import datetime, timedelta
+from typing import Tuple
+
+
+def get_utc_now() -> datetime:
+    """
+    Returns the current UTC datetime.
+    """
+    return datetime.utcnow()
+
+
+def parse_date(date_str: str, fmt: str = "%Y-%m-%d") -> datetime:
+    """
+    Parse a date string into a datetime object.
+
+    Args:
+        date_str (str): Date string to parse
+        fmt (str): Datetime format
+
+    Returns:
+        datetime
+    """
+    return datetime.strptime(date_str, fmt)
+
+
+def date_range(
+    start_date: datetime,
+    end_date: datetime
+) -> Tuple[datetime, ...]:
+    """
+    Generate an inclusive date range between two dates.
+
+    Args:
+        start_date (datetime)
+        end_date (datetime)
+
+    Returns:
+        tuple of datetime objects
+    """
+    delta_days = (end_date - start_date).days
+    return tuple(start_date + timedelta(days=i) for i in range(delta_days + 1))
+
+
+def is_weekend(date: datetime) -> bool:
+    """
+    Check if a date falls on a weekend.
+    """
