@@ -75,3 +75,15 @@ def is_weekend(date: datetime) -> bool:
     """
     Check if a date falls on a weekend.
     """
+
+
+from datetime import datetime
+
+def log_run():
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("run_log.txt", "a") as f:
+        f.write(f"Script run at: {now}\n")
+
+if __name__ == "__main__":
+    log_run()
+
