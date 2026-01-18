@@ -109,3 +109,55 @@ if __name__ == "__main__":
     engineered = create_features(sample)
     print(engineered)
 
+
+# Robust features
+
+import pandas as pd
+import numpy as np
+
+
+def create_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Feature engineering with robust handling of outliers
+    and simple risk-style indicators.
+    """
+
+    df = df.copy()
+
+    # Feature 1: capped salary (winsorization)
+    salary_cap = df["salary"].quantile(0.95)
+    df["salary_capped"] = df["salary"].apply(
+        lambda x: min(x, salary_cap) if pd.notnull(x) else None
+    )
+
+    # Feature 2: normalized age (0–1 scaling)
+    df["age_normalized"] = (
+        (df["age"] - df["age"].min()) /
+        (df["age"].max() - df["age"].min())
+    )
+
+    # Feature 3: potential risk flag (low income & non-working age)
+    df["potential_risk_flag"] = df.apply(
+        lambda row: 1
+        if (
+            pd.notnull(row["salary"])
+            and row["salary"] < 35000
+            and (row["age"] < 21 or row["age"] > 65)
+        )
+        else 0,
+        axis=1
+    )
+
+    return df
+
+
+if __name__ == "__main__":
+    sample = pd.DataFrame({
+        "age": [22, 35, 50, 70],
+        "salary": [40000, 60000, 80000, 30000]
+    })
+
+    engineered = create_features(sample)
+    print(engineered)
+
+
