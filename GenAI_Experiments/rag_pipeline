@@ -1,0 +1,112 @@
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+from typing import List, Tuple
+
+from dotenv import load_dotenv
+
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_community.document_loaders import DirectoryLoader, TextLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.schema import Document
+from langchain.prompts import ChatPromptTemplate
+
+
+@dataclass
+class RAGConfig:
+    docs_dir: str = "data/knowledge/docs"
+    faiss_dir: str = "data/knowledge/faiss_index"
+    chunk_size: int = 900
+    chunk_overlap: int = 150
+    top_k: int = 5
+    model: str = "gpt-4o-mini"  # change if you want
+
+
+def _load_documents(docs_dir: str) -> List[Document]:
+    """
+    Loads .md and .txt files from docs_dir.
+    Add more loaders if you want PDFs, DOCX, etc.
+    """
+    if not os.path.isdir(docs_dir):
+        raise FileNotFoundError(f"Docs folder not found: {docs_dir}")
+
+    loader = DirectoryLoader(
+        docs_dir,
+        glob="**/*",
+        loader_cls=TextLoader,
+        loader_kwargs={"encoding": "utf-8"},
+        show_progress=True,
+        silent_errors=True,
+    )
+    docs = loader.load()
+    if not docs:
+        raise ValueError(f"No documents found in {docs_dir}. Add .md/.txt files.")
+    return docs
+
+
+def _split_documents(docs: List[Document], chunk_size: int, chunk_overlap: int) -> List[Document]:
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        separators=["\n\n", "\n", " ", ""],
+    )
+    return splitter.split_documents(docs)
+
+
+def build_or_load_vectorstore(cfg: RAGConfig) -> FAISS:
+    """
+    Builds a FAISS vectorstore if it doesn't exist; otherwise loads it.
+    """
+    load_dotenv()
+    embeddings = OpenAIEmbeddings()
+
+    # Load existing index if present
+    if os.path.isdir(cfg.faiss_dir) and os.path.exists(os.path.join(cfg.faiss_dir, "index.faiss")):
+        return FAISS.load_local(cfg.faiss_dir, embeddings, allow_dangerous_deserialization=True)
+
+    # Build new index
+    raw_docs = _load_documents(cfg.docs_dir)
+    split_docs = _split_documents(raw_docs, cfg.chunk_size, cfg.chunk_overlap)
+
+    vs = FAISS.from_documents(split_docs, embeddings)
+    os.makedirs(cfg.faiss_dir, exist_ok=True)
+    vs.save_local(cfg.faiss_dir)
+    return vs
+
+
+_PROMPT = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            "You are a helpful assistant. Answer ONLY using the provided context. "
+            "If the context is insufficient, say what is missing and ask a focused follow-up question.",
+        ),
+        ("human", "Question: {question}\n\nContext:\n{context}"),
+    ]
+)
+
+
+def answer_question(question: str, cfg: RAGConfig | None = None) -> Tuple[str, List[str]]:
+    """
+    Returns (answer, sources).
+    """
+    cfg = cfg or RAGConfig()
+    load_dotenv()
+
+    vs = build_or_load_vectorstore(cfg)
+    retriever = vs.as_retriever(search_kwargs={"k": cfg.top_k})
+
+    docs = retriever.get_relevant_documents(question)
+    context = "\n\n---\n\n".join(
+        f"[SOURCE: {os.path.basename(d.metadata.get('source','unknown'))}]\n{d.page_content}"
+        for d in docs
+    )
+
+    llm = ChatOpenAI(model=cfg.model, temperature=0)
+    msg = _PROMPT.format_messages(question=question, context=context)
+    resp = llm.invoke(msg)
+
+    sources = sorted({os.path.basename(d.metadata.get("source", "unknown")) for d in docs})
+    return resp.content, sources
