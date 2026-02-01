@@ -5,7 +5,7 @@ import logging
 from argparse import ArgumentParser
 from collections import Counter, defaultdict
 from datetime import datetime
-
+import numpy as np
 import pandas as pd
 
 
