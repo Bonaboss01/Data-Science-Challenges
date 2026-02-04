@@ -159,5 +159,6 @@ if __name__ == "__main__":
 
     engineered = create_features(sample)
     print(engineered)
+    # Feature Engineering can be used to create new features from existing variables.
 
 
