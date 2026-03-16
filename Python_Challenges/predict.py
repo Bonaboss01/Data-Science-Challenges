@@ -4,3 +4,4 @@ def sfs_pipeline(df):
     return preds
 df = pd.read_csv("sales_data.csv")
 
+def forecast(data):
