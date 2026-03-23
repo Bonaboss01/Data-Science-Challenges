@@ -56,3 +56,10 @@ if __name__ == "__main__":
     rows = fetch_api_data(api_url, max_pages=1)  # no pagination needed for this API
     save_to_csv(rows, "api_data.csv")
 
+
+def build_master_dataset(sales, products, stores, calendar):
+    df = sales.merge(products, on="product_id", how="left")
+    df = df.merge(stores, on="store_id", how="left")
+    df = df.merge(calendar, on="date", how="left")
+    
+    return df
